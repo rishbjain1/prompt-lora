@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import warnings
+from collections.abc import Mapping
 from pathlib import Path
 from statistics import mean
 from typing import Any
@@ -114,21 +115,26 @@ def generate_completion(model: Any, tokenizer: Any, torch: Any, brief: str) -> s
             "content": f"{USER_INSTRUCTION}\n\n{brief}",
         }
     ]
-    input_ids = tokenizer.apply_chat_template(
+    encoded = tokenizer.apply_chat_template(
         messages,
         tokenize=True,
         add_generation_prompt=True,
         return_tensors="pt",
-    ).to(model.device)
+        return_dict=True,
+    )
+    if not isinstance(encoded, Mapping):
+        encoded = {"input_ids": encoded}
+    encoded = {key: value.to(model.device) for key, value in encoded.items()}
     with torch.inference_mode():
         output_ids = model.generate(
-            input_ids,
+            **encoded,
             max_new_tokens=1536,
             do_sample=False,
             pad_token_id=tokenizer.pad_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
-    return tokenizer.decode(output_ids[0, input_ids.shape[-1] :], skip_special_tokens=True).strip()
+    prompt_length = encoded["input_ids"].shape[-1]
+    return tokenizer.decode(output_ids[0, prompt_length:], skip_special_tokens=True).strip()
 
 
 def judge_completion(
