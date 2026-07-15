@@ -53,7 +53,7 @@ This is teacher–student training: Claude rewrites source prompts into structur
 
 ## 3. Train QLoRA on Colab
 
-Open [`notebooks/train_colab.ipynb`](notebooks/train_colab.ipynb), select a T4 runtime, and run all cells. Notebook installs packages, uploads script/data, runs training, and downloads adapter archive. Training logic remains in `train_qlora.py`.
+Open [`notebooks/train_colab.ipynb`](notebooks/train_colab.ipynb), select a T4 runtime, and run all cells. Upload `train_qlora.py`, `eval_prompts.py`, `distill.py`, and both structured datasets when prompted. Notebook generates offline base completions, trains, generates offline adapter completions, then downloads `prompt-lora-run.zip` containing `out/adapter/` and `eval/out/*.json`. Training logic remains in `train_qlora.py`.
 
 Direct invocation:
 
@@ -80,7 +80,7 @@ Generate and judge adapter completions against identical validation briefs:
 python eval_prompts.py --adapter out/adapter --name adapter
 ```
 
-Set `JUDGE_MODEL` to override default `claude-haiku-4-5-20251001`. `CRAG_LLM_API_KEY` is accepted instead of `ANTHROPIC_API_KEY`. Each run writes `eval/out/<name>.json` with per-example outputs, judge scores, judge errors, block-header validity, and means.
+Set `JUDGE_MODEL` to override default `claude-haiku-4-5-20251001`. `CRAG_LLM_API_KEY` is accepted instead of `ANTHROPIC_API_KEY`. Each run writes `eval/out/<name>.json` with full generated completions, per-example judge scores, judge errors, block-header validity, and means. CUDA generation uses 4-bit NF4 weights when bitsandbytes is available.
 
 Offline-only evaluation still generates model completions but skips Anthropic calls:
 
