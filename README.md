@@ -92,10 +92,14 @@ Block-header validity is free and uses `distill.validate_structured_prompt`. Val
 
 ## Results
 
-| Model | Skeleton | Shot grammar | Constraints | Specificity | Total | Valid headers |
+Run of 2026-07-15: Mistral-7B-Instruct-v0.3, QLoRA (r=16, alpha=32, 4-bit NF4) on a Colab T4, 93 train / 10 val distilled pairs, 3 epochs (36 steps, ~2h05m, train loss 2.36 → 1.42). Judged by Claude Haiku 4.5 against the gold reference per [`eval/rubric.md`](eval/rubric.md); "valid headers" is the free offline structural check.
+
+| Model | Skeleton | Shot grammar | Constraints | Specificity | Total (/10) | Valid headers |
 |---|---:|---:|---:|---:|---:|---:|
-| Base | — | — | — | — | — | — |
-| Base + LoRA | — | — | — | — | — | — |
+| Base | 0.45 | 0.00 | 0.40 | 0.45 | 1.30 | 0/10 |
+| Base + LoRA | 1.55 | 1.10 | 1.15 | 0.75 | **4.55** | **9/10** |
+
+The honest read: the adapter reliably learns the block-method *format* (0 → 90% structural validity) and 3.5×'s the judge total, but stays well below the teacher's ceiling — expected from 93 examples and a 7B student. The gap is a dataset-size problem, not a method problem; the next lever is more distilled pairs, not more epochs.
 
 ## Tests
 
